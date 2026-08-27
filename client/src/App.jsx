@@ -1,5 +1,21 @@
+import { Routes, Route,Navigate } from "react-router-dom";
+import AuthPage from "./Pages/AuthPage";
+import HomePage from "./Pages/HomePage";
+import DiagnosisPage from "./Pages/DiagnosisPage";
+import {useSelector,useDispatch} from "react-redux"
 function App() {
-  return <h1 className="text-center p-9 bg-green-800 text-6xl text-white ">AI DISEASE PREDICTION</h1>
+  const dispatch=useDispatch();
+  const profile=useSelector(state=>state.main.profile);
+  return <div>
+    <Routes>
+      <Route path="/predict" element={profile?<DiagnosisPage/>:<Navigate to="/login"/>}></Route>
+      <Route path="/login" element={!profile?<AuthPage/>:<Navigate to="/"/>}></Route>
+      <Route path="/" element={profile?<HomePage/>:<Navigate to="/login"/>}></Route>
+      
+    </Routes>
+    
+   
+  </div>
 
 }
 
