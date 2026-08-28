@@ -1,13 +1,19 @@
 import { Activity, ArrowRight, Brain, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import axios from "axios"
 import Navbar from "./Navbar";
-
-function HomePage() {
+import { useEffect } from "react";
+import { useSelector,useDispatch } from "react-redux";
+import { control } from "../Redux/slice";
+import {toast} from "react-hot-toast"
+function HomePage({url}) {
+  const dispatch=useDispatch();
+  const profile=useSelector(state=>state.main.profile);
+  
   return (
     <div className="min-h-screen bg-white">
 
-      <Navbar />
+      <Navbar url={url} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-emerald-600 to-cyan-600">

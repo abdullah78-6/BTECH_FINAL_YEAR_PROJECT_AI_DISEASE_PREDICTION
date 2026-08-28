@@ -5,10 +5,12 @@ import App from './App.jsx'
 import { BrowserRouter} from "react-router-dom";
 import {Provider} from "react-redux";
 import Medicalstore from './Redux/store.js';
+import  { Toaster } from 'react-hot-toast';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
     <Provider store={Medicalstore}>
+      <Toaster/>
     <App />
     </Provider>
     </BrowserRouter>

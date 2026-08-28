@@ -14,15 +14,79 @@ import {
   Sparkles,
   Globe,
 } from "lucide-react";
-
-function AuthPage() {
+import axios from "axios"
+import toast from 'react-hot-toast';
+import {useSelector,useDispatch} from "react-redux"
+import { control } from "../Redux/slice";
+function AuthPage({url}) {
   // Sign Up first
-  const [isLogin, setIsLogin] = useState(false);
-
+  const [isLogin, setIsLogin] =useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const logindata=useSelector(state=>state.main.logindata);
+  const [confirmpass,setconfirmpass]=useState("");
+  const dispatch=useDispatch();
+  const onChangehandler=(e)=>{
+    dispatch(control.setlogindata({
+      name:e.target.name,
+      value:e.target.value
+    }))
+    
+  }
+const Onlogin=async(event)=>{
+    event.preventDefault();
+    let newurl=url;
+    if(logindata.password!==confirmpass&&!isLogin){
+      toast.error("PLEASE FILL THE SAME PASSWORD");
+      return ;
+    }
+    if(isLogin){
+    newurl=newurl+"/api/auth/signin"
+    }
+    else{
+    newurl=newurl+"/api/auth/signup"
+    }
+    try{
+      
+        const response=await axios.post(newurl,logindata,{
+            withCredentials:true
+        });
+      
+    if(response.data.status){
+          if(isLogin){
+             const res=await axios.get(url+"/api/auth/getprofile",{
+            withCredentials:true,
+        })
+        if(res.data.status){
+            dispatch(control.setprofile(res.data.email));
+        }
+        else{
+            dispatch(control.setprofile(""));
+        }
+       
+       
+          }
+        
+       
+        
+        toast.success(response.data.result);
+        
+    }
+    else{
+        toast.error(response.data.result);
+    }
+
+    }
+    catch(err){
+        toast.error("SERVER ERROR");
+
+    }
+    
+
+}
 
   return (
+    
     <div className="min-h-screen bg-slate-50 lg:flex">
 
       {/* ================= LEFT SIDE ================= */}
@@ -270,7 +334,7 @@ function AuthPage() {
 
           {/* ================= FORM ================= */}
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={Onlogin}>
 
 
             {/* Full Name */}
@@ -294,6 +358,10 @@ function AuthPage() {
                     type="text"
                     placeholder="Enter your full name"
                     className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
+                    required
+                    name="name"
+                    value={logindata.name}
+                    onChange={onChangehandler}
                   />
 
                 </div>
@@ -322,6 +390,10 @@ function AuthPage() {
                   type="email"
                   placeholder="Enter your email"
                   className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
+                  required
+                  name="email"
+                  value={logindata.email}
+                    onChange={onChangehandler}
                 />
 
               </div>
@@ -348,6 +420,10 @@ function AuthPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-12 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
+                  required
+                  name="password"
+                  value={logindata.password}
+                  onChange={onChangehandler}
                 />
 
                 <button
@@ -394,6 +470,8 @@ function AuthPage() {
                     }
                     placeholder="Confirm your password"
                     className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-12 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-4 focus:ring-green-500/10"
+                    required
+                    onChange={(e)=>setconfirmpass(e.target.value)}
                   />
 
                   <button
@@ -423,7 +501,7 @@ function AuthPage() {
 
             {/* Forgot Password */}
 
-            {isLogin && (
+            {/* {isLogin && (
 
               <div className="flex justify-end">
 
@@ -436,13 +514,13 @@ function AuthPage() {
 
               </div>
 
-            )}
+            )} */}
 
 
             {/* Main Button */}
 
             <button
-              type="button"
+              type="submit"
               className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-green-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-green-500/20 transition hover:bg-green-600 hover:shadow-green-600/30 active:scale-[0.99]"
             >
 

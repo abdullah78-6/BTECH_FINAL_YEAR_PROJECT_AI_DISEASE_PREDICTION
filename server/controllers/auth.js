@@ -53,8 +53,8 @@ const login=async(req,res)=>{
         const token=createtoken(user._id);
         res.cookie("token",token,{
             httpOnly:true,
-            secure:true,
-            sameSite:"none",//strict for local server
+            secure:false,
+            sameSite:"strict",//strict for local server
             maxAge:24*60*60*1000
         })
 
@@ -73,7 +73,7 @@ const Logout=async(req,res)=>{
         res.clearCookie("token",{
         httpOnly:true,
         // secure: process.env.NODE_ENV === "production",
-        sameSite:"none"//strict for local server
+        sameSite:"strict"//strict for local server
     });
     return res.json({status:true,message:"Logged Out "})
         
