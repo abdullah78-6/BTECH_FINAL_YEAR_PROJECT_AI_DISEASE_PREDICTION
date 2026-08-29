@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {RefreshCw,Sparkles,} from "lucide-react";
 import Navbar from "./Navbar";
+import axios from "axios";
+import { useDispatch } from "react-redux";
 const symptomsList = [
   "Itching",
   "Skin Rash",
@@ -126,12 +128,12 @@ const symptomsList = [
   "Loss of Energy"
 ];
 
-function DiagnosisPage() {
+function DiagnosisPage({url}) {
 
   // ================= STATE =================
 
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
-
+  const dispatch=useDispatch();
 
   // ================= TOGGLE SYMPTOM =================
 
@@ -142,6 +144,26 @@ function DiagnosisPage() {
         : [...prev, symptom]
     );
   };
+const Fetch=async()=>{
+      try {
+        const res=await axios.get(url+"/api/auth/getprofile",{
+          
+          withCredentials:true
+        });
+        if(res.data.status){
+          dispatch(control.setprofile(res.data.email));
+        }
+
+      } catch (error) {
+        console.log("fetch profile server",error);
+        
+      }
+      
+    }
+    useEffect(()=>{
+      Fetch();
+
+    },[])
 
 
   // ================= RANDOMIZE =================
@@ -177,7 +199,7 @@ function DiagnosisPage() {
 
       {/* ================= NAVBAR ================= */}
 
-      <Navbar />
+      <Navbar url={url} />
 
 
       {/* ================= MAIN CONTENT ================= */}

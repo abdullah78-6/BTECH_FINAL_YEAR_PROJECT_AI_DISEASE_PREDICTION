@@ -1,5 +1,6 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { GoogleAuthProvider , signInWithPopup } from "firebase/auth";
+import  {auth}  from '../../firebase.js'
 import {
   User,
   Mail,
@@ -18,6 +19,7 @@ import axios from "axios"
 import toast from 'react-hot-toast';
 import {useSelector,useDispatch} from "react-redux"
 import { control } from "../Redux/slice";
+import { FcGoogle } from "react-icons/fc"
 function AuthPage({url}) {
   // Sign Up first
   const [isLogin, setIsLogin] =useState(false);
@@ -32,7 +34,61 @@ function AuthPage({url}) {
       value:e.target.value
     }))
     
+
   }
+  const Fetch=async()=>{
+      try {
+        const res=await axios.get(url+"/api/auth/getprofile",{
+          
+          withCredentials:true
+        });
+        if(res.data.status){
+          dispatch(control.setprofile(res.data.email));
+        }
+
+      } catch (error) {
+        console.log("fetch profile server",error);
+        
+      }
+      
+    }
+    useEffect(()=>{
+      Fetch();
+
+    },[])
+
+  const GoogleLogin=async(e)=>{
+      e.preventDefault();
+      const provider=new GoogleAuthProvider();
+      const result=await signInWithPopup(auth,provider);
+      try {
+        const res=await axios.post(url+"/api/auth/google_signin",
+          {
+            email:result.user.email,
+            
+          
+          },
+          
+          {
+            withCredentials:true
+          }
+
+        );
+        if(res.data.status){
+          toast.success(res.data.message);
+          Fetch();
+          dispatch(control.setbackendemail(res.data.email));
+        }
+        else{
+        toast.error(res.data.message);
+        }
+        
+      } catch (error) {
+        console.log("goolge login server error",error);
+        
+      }
+
+    }
 const Onlogin=async(event)=>{
     event.preventDefault();
     let newurl=url;
@@ -552,17 +608,19 @@ const Onlogin=async(event)=>{
 
 
           {/* ================= GOOGLE ================= */}
-
+{isLogin?
           <button
             type="button"
             className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white py-3.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            onClick={GoogleLogin}
           >
 
-            <Globe size={19} />
+            
+            <FcGoogle size={20}/>
 
             Continue with Google
 
-          </button>
+          </button>:<></>}
 
 
           {/* ================= SWITCH ================= */}
