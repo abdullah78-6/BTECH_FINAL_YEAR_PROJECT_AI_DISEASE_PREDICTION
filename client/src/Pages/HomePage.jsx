@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useSelector,useDispatch } from "react-redux";
 import { control } from "../Redux/slice";
 import {toast} from "react-hot-toast"
+import Footer from "./Footer";
 function HomePage({url}) {
   const dispatch=useDispatch();
   const profile=useSelector(state=>state.main.profile);
@@ -142,8 +143,9 @@ function HomePage({url}) {
         </div>
 
       </section>
-
+<Footer/>
     </div>
+    
   );
 }
 

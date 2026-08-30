@@ -3,6 +3,7 @@ import {RefreshCw,Sparkles,} from "lucide-react";
 import Navbar from "./Navbar";
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import Footer from "./Footer";
 const symptomsList = [
   "Itching",
   "Skin Rash",
@@ -410,6 +411,12 @@ const Fetch=async()=>{
               Predict Disease
 
             </button>
+            <div className="w-full overflow-y-auto">
+              <label className="mb-2 block text-sm font-semibold text-slate-700"> Final Result </label>
+            <textarea  readOnly className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100" rows={10} cols={10} placeholder="Your final prediction result will appear here...">
+
+            </textarea>
+            </div>
 
 
             {/* ================= DISCLAIMER ================= */}
@@ -424,7 +431,7 @@ const Fetch=async()=>{
         </div>
 
       </main>
-
+<Footer/>
     </div>
   );
 }
