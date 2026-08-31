@@ -4,6 +4,7 @@ import "dotenv/config"
 import { Connectiondb } from "./utils/db.js";
 import Authrouter from "./routes/user-route.js";
 import cookieParser from "cookie-parser";
+import Diseaserouter from "./routes/disease-route.js";
 const app=express();
 Connectiondb()
 app.use(cookieParser())
@@ -16,6 +17,7 @@ app.get("/",(req,res)=>{
     res.json({status:true,message:"SERVER IS ALL SET TO GO"});
 })
 app.use("/api/auth",Authrouter);
+app.use("/api/health",Diseaserouter);
 const port=process.env.PORT||9000
 app.listen(port,()=>{
     console.log(`server is listing on http://localhost:${port}`);

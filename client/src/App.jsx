@@ -32,7 +32,7 @@ function App() {
     },[])
   return <div>
     <Routes>
-      <Route path="/predict" element={profile?<DiagnosisPage url={backendurl}/>:<Navigate to="/login"/>}></Route>
+      <Route path="/predict" element={profile?<DiagnosisPage url={backendurl}/>:<Navigate to="/login" />}></Route>
       <Route path="/login" element={!profile?<AuthPage url={backendurl}/>:<Navigate to="/"/>}></Route>
       <Route path="/" element={profile?<HomePage url={backendurl}/>:<Navigate to="/login"/>}></Route>
       

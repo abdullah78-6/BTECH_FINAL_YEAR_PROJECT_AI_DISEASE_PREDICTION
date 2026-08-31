@@ -7,7 +7,8 @@ const Diseaseslice=createSlice({
             name:"",
             email:"",
             password:""
-        }
+        },
+        prediction:""
     },
     reducers:{
         setprofile(state,action){
@@ -17,6 +18,9 @@ const Diseaseslice=createSlice({
             const {name,value}=action.payload;
             state.logindata[name]=value;
 
+        },
+        setprediction(state,action){
+            state.prediction=action.payload;
         }
     }
 })

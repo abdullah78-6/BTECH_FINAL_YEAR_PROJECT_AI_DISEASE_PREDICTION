@@ -1,142 +1,19 @@
 import { useEffect, useState } from "react";
-import {RefreshCw,Sparkles,} from "lucide-react";
+import { ClipLoader } from "react-spinners";
+import { RefreshCw, Sparkles } from "lucide-react";
 import Navbar from "./Navbar";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Footer from "./Footer";
-const symptomsList = [
-  "Itching",
-  "Skin Rash",
-  "Nodal Skin Eruptions",
-  "Continuous Sneezing",
-  "Shivering",
-  "Chills",
-  "Joint Pain",
-  "Stomach Pain",
-  "Acidity",
-  "Ulcers On Tongue",
-  "Muscle Wasting",
-  "Vomiting",
-  "Fatigue",
-  "Weight Loss",
-  "Cough",
-  "Headache",
-  "Nausea",
-  "Fever",
-  "Dizziness",
-  "Chest Pain",
-  "Breathlessness",
-  "Weakness",
-  "Abdominal Pain",
-  "Loss of Appetite",
-  "High Fever",
-  "Mild Fever",
-  "Cold",
-  "Sore Throat",
-  "Runny Nose",
-  "Nasal Congestion",
-  "Sneezing",
-  "Dry Cough",
-  "Blood in Sputum",
-  "Phlegm",
-  "Wheezing",
-
-  "Back Pain",
-  "Neck Pain",
-  "Muscle Pain",
-  "Muscle Weakness",
-  "Leg Pain",
-  "Swelling Joints",
-  "Knee Pain",
-  "Shoulder Pain",
-
-  "Diarrhea",
-  "Constipation",
-  "Indigestion",
-  "Bloating",
-  "Gas",
-  "Stomach Bloating",
-  "Heartburn",
-  "Difficulty Swallowing",
-  "Abdominal Swelling",
-
-  "Yellowish Skin",
-  "Yellowish Eyes",
-  "Pale Skin",
-  "Red Eyes",
-  "Dark Urine",
-  "Blood in Urine",
-  "Frequent Urination",
-  "Painful Urination",
-  "Burning Urination",
-  "Dehydration",
-
-  "Blurred Vision",
-  "Eye Pain",
-  "Watery Eyes",
-  "Loss of Vision",
-
-  "Hearing Loss",
-  "Ear Pain",
-  "Ringing in Ears",
-
-  "Hair Loss",
-  "Dry Skin",
-  "Excessive Sweating",
-  "Acne",
-  "Skin Discoloration",
-
-  "Fast Heart Rate",
-  "Irregular Heartbeat",
-  "Low Blood Pressure",
-  "High Blood Pressure",
-
-  "Anxiety",
-  "Confusion",
-  "Memory Loss",
-  "Difficulty Concentrating",
-  "Insomnia",
-  "Drowsiness",
-
-  "Loss of Smell",
-  "Loss of Taste",
-  "Difficulty Breathing",
-  "Rapid Breathing",
-
-  "Pus Filled Pimples",
-  "Blister",
-  "Red Spots",
-  "Itchy Eyes",
-
-  "Paleness",
-  "Cold Hands and Feet",
-  "Excessive Hunger",
-  "Excessive Thirst",
-
-  "Weight Gain",
-  "Swollen Legs",
-  "Swollen Feet",
-  "Facial Swelling",
-
-  "Tiredness",
-  "General Discomfort",
-  "Malaise",
-  "Restlessness",
-
-  "Chills with Fever",
-  "Night Sweats",
-  "Body Pain",
-  "Loss of Energy"
-];
-
-function DiagnosisPage({url}) {
-
-  // ================= STATE =================
-
+import toast from "react-hot-toast";
+import { control } from "../Redux/slice";
+import { symptomsList } from "../assets/symptom";
+function DiagnosisPage({ url }) {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
-  const dispatch=useDispatch();
+  const [loading, setloading] = useState(false);
 
-  // ================= TOGGLE SYMPTOM =================
+  const dispatch = useDispatch();
+  const prediction = useSelector((state) => state.main.prediction);
 
   const toggleSymptom = (symptom) => {
     setSelectedSymptoms((prev) =>
@@ -145,120 +22,72 @@ function DiagnosisPage({url}) {
         : [...prev, symptom]
     );
   };
-const Fetch=async()=>{
-      try {
-        const res=await axios.get(url+"/api/auth/getprofile",{
-          
-          withCredentials:true
-        });
-        if(res.data.status){
-          dispatch(control.setprofile(res.data.email));
-        }
-
-      } catch (error) {
-        console.log("fetch profile server",error);
-        
-      }
-      
-    }
-    useEffect(()=>{
-      Fetch();
-
-    },[])
-
-
-  // ================= RANDOMIZE =================
-
-  const randomizeSymptoms = () => {
-    const shuffled = [...symptomsList].sort(
-      () => Math.random() - 0.5
-    );
-
-    setSelectedSymptoms(shuffled.slice(0, 3));
-  };
-
-
-  // ================= PREDICTION =================
-
-  const handlePrediction = () => {
-
+const handlePrediction = async () => {
     if (selectedSymptoms.length === 0) {
-      alert("Please select at least one symptom.");
+      toast.error("Please select at least one symptom.");
       return;
     }
 
-    alert(
-      `Prediction started with ${selectedSymptoms.length} symptoms.`
-    );
+    setloading(true);
+
+    try {
+      const symptom = selectedSymptoms.map((i) => {
+        return i;
+      });
+
+      const res = await axios.post(
+        url + "/api/health/predict",
+        { symptom },
+        {
+          withCredentials: true
+        }
+      );
+
+      if (res.data.status) {
+        dispatch(control.setprediction(res.data.result));
+        setloading(false);
+      } else {
+        toast.error(res.data.message);
+        setloading(false);
+      }
+    } catch (error) {
+      console.log("error from backend", error);
+      setloading(false);
+    }
   };
-
-
-  // ================= UI =================
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-
-      {/* ================= NAVBAR ================= */}
+return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 font-semibold">
 
       <Navbar url={url} />
 
-
-      {/* ================= MAIN CONTENT ================= */}
-
       <main className="mx-auto max-w-6xl px-5 py-10">
 
-        {/* ================= HEADING ================= */}
-
         <div className="mb-8 text-center">
-
           <h2 className="text-3xl font-bold text-slate-800 sm:text-4xl">
             Disease Prediction
           </h2>
 
           <p className="mt-3 text-sm text-slate-500 sm:text-base">
-            Select your symptoms below to get an AI-powered
-            health prediction.
+            Select your symptoms below to get an AI-powered health prediction.
           </p>
-
         </div>
-
-
-        {/* ================= CONTENT GRID ================= */}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
 
-
-          {/* ================= SYMPTOMS ================= */}
-
           <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-            {/* Symptoms Header */}
-
             <div className="mb-5 flex items-center justify-between">
-
               <h3 className="text-lg font-bold text-slate-800">
                 Symptoms ({selectedSymptoms.length} selected)
               </h3>
-
-
-              {/* Randomize Button */}
-
-              
-
             </div>
-
-
-            {/* ================= SYMPTOMS GRID ================= */}
 
             <div className="grid max-h-[500px] grid-cols-1 gap-3 overflow-y-auto pr-2 sm:grid-cols-2 xl:grid-cols-3">
 
               {symptomsList.map((symptom) => {
-
-                const isSelected =
-                  selectedSymptoms.includes(symptom);
+                const isSelected = selectedSymptoms.includes(symptom);
 
                 return (
-
                   <button
                     key={symptom}
                     onClick={() => toggleSymptom(symptom)}
@@ -268,11 +97,7 @@ const Fetch=async()=>{
                         : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50"
                     }`}
                   >
-
                     <div className="flex items-center justify-between">
-
-
-                      {/* Radio Circle */}
 
                       <div
                         className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
@@ -281,15 +106,10 @@ const Fetch=async()=>{
                             : "border-slate-300"
                         }`}
                       >
-
                         {isSelected && (
                           <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                         )}
-
                       </div>
-
-
-                      {/* 0 / 1 */}
 
                       <span
                         className={`text-sm font-bold ${
@@ -300,11 +120,7 @@ const Fetch=async()=>{
                       >
                         {isSelected ? "1" : "0"}
                       </span>
-
                     </div>
-
-
-                    {/* Symptom Name */}
 
                     <span
                       className={`mt-2 block text-xs font-medium ${
@@ -315,26 +131,16 @@ const Fetch=async()=>{
                     >
                       {symptom}
                     </span>
-
                   </button>
-
                 );
               })}
 
             </div>
-
           </div>
-
-
-          {/* ================= ANALYSIS ================= */}
 
           <div className="h-fit rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-
-            {/* Analysis Header */}
-
             <div className="flex items-center gap-2">
-
               <Sparkles
                 size={21}
                 className="text-emerald-600"
@@ -343,14 +149,9 @@ const Fetch=async()=>{
               <h3 className="text-xl font-bold text-slate-800">
                 Analysis
               </h3>
-
             </div>
 
-
-            {/* ================= TOTAL SYMPTOMS ================= */}
-
             <div className="mt-5 rounded-xl bg-blue-50 p-5">
-
               <p className="text-xs font-semibold text-blue-600">
                 Total Symptoms
               </p>
@@ -358,11 +159,7 @@ const Fetch=async()=>{
               <p className="mt-2 text-3xl font-bold text-blue-700">
                 {selectedSymptoms.length}
               </p>
-
             </div>
-
-
-            {/* ================= ACTIVE SYMPTOMS ================= */}
 
             <div className="mt-4 min-h-[120px] rounded-xl bg-slate-50 p-5">
 
@@ -370,60 +167,108 @@ const Fetch=async()=>{
                 Active Symptoms
               </p>
 
-
               {selectedSymptoms.length === 0 ? (
-
                 <p className="mt-3 text-sm text-slate-400">
                   No symptoms selected
                 </p>
-
               ) : (
-
                 <div className="mt-3 space-y-1">
-
                   {selectedSymptoms.map((symptom) => (
-
                     <p
                       key={symptom}
                       className="text-sm text-slate-600"
                     >
                       • {symptom}
                     </p>
-
                   ))}
-
                 </div>
-
               )}
 
             </div>
 
-
-            {/* ================= PREDICT BUTTON ================= */}
-
             <button
               onClick={handlePrediction}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-700 active:scale-[0.99]"
+              disabled={loading}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
             >
-
-              <Sparkles size={18} />
-
-              Predict Disease
-
+              {loading ? (
+                <>
+                  <ClipLoader
+                    size={18}
+                    color="#ffffff"
+                    speedMultiplier={0.8}
+                  />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Predict Disease
+                </>
+              )}
             </button>
-            <div className="w-full overflow-y-auto">
-              <label className="mb-2 block text-sm font-semibold text-slate-700"> Final Result </label>
-            <textarea  readOnly className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100" rows={10} cols={10} placeholder="Your final prediction result will appear here...">
 
-            </textarea>
+            <div className="mt-6 w-full">
+
+              <div className="mb-3 flex items-center justify-between">
+
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100">
+                    <Sparkles
+                      size={15}
+                      className="text-emerald-600"
+                    />
+                  </span>
+
+                  Final Result
+                </label>
+
+                {prediction && !loading && (
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-600">
+                    AI Generated
+                  </span>
+                )}
+
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-blue-50 shadow-[inset_0_2px_8px_rgba(15,23,42,0.04),0_8px_25px_rgba(16,185,129,0.08)]">
+
+                {loading ? (
+                  <div className="flex h-[260px] flex-col items-center justify-center gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 shadow-sm">
+                      <ClipLoader
+                        size={32}
+                        color="#10b981"
+                        speedMultiplier={0.8}
+                      />
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-emerald-700">
+                        Analyzing Symptoms
+                      </p>
+
+                      <p className="mt-1 text-xs font-medium text-slate-400">
+                        Please wait while AI generates your prediction...
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <textarea
+                    value={prediction || ""}
+                    readOnly
+                    rows={10}
+                    placeholder="Your final prediction result will appear here..."
+                    className="w-full resize-none border-0 bg-transparent p-5 text-sm font-semibold leading-7 text-emerald-950 outline-none placeholder:text-slate-400 focus:ring-0 "
+                  />
+                )}
+
+              </div>
+
             </div>
 
-
-            {/* ================= DISCLAIMER ================= */}
-
             <p className="mt-4 text-center text-xs leading-5 text-slate-400">
-              This prediction is generated by an AI model and
-              should not replace professional medical advice.
+              This prediction is generated by an AI model and should not replace professional medical advice.
             </p>
 
           </div>
@@ -431,9 +276,12 @@ const Fetch=async()=>{
         </div>
 
       </main>
-<Footer/>
+
+      <Footer />
+
     </div>
   );
 }
 
 export default DiagnosisPage;
+
