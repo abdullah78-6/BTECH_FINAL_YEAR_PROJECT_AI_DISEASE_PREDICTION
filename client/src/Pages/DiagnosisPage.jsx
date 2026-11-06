@@ -11,7 +11,7 @@ import { symptomsList } from "../assets/symptom";
 function DiagnosisPage({ url }) {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setloading] = useState(false);
-
+  const profile=useSelector(state=>state.main.profile);
   const dispatch = useDispatch();
   const prediction = useSelector((state) => state.main.prediction);
 
@@ -26,6 +26,10 @@ const handlePrediction = async () => {
     if (selectedSymptoms.length === 0) {
       toast.error("Please select at least one symptom.");
       return;
+    }
+    if(!profile){
+      toast.error("User Logn Required");
+      return ;
     }
 
     setloading(true);

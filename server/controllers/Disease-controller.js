@@ -3,7 +3,7 @@ const Predictdisease=async(req,res)=>{
     try {
         const {symptom}=req.body;
         const genai=new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model=genai.getGenerativeModel({model:"gemini-2.5-flash-lite"})
+    const model=genai.getGenerativeModel({model:"gemini-3.5-flash-lite"})
     const prompt=symptom.map((i)=>{return i});
     const response=await model.generateContent(`
     Give a Disease prediction  In just 3 to 4 lines  also tell me how can we diagnosis 

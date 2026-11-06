@@ -5,12 +5,14 @@ import axios from "axios"
 import {toast} from "react-hot-toast"
 import { useEffect } from "react";
 import { control } from "../Redux/slice";
+import { useNavigate } from "react-router-dom";
 function Navbar({url}) {
 const location = useLocation();
   const profile=useSelector(state=>state.main.profile);
   const isHome = location.pathname === "/";
   const isPredict = location.pathname === "/predict";
   const dispatch=useDispatch();
+  const navigate=useNavigate();
   const Logout=async()=>{
         const response=await axios.post(url+"/api/auth/logout",{},{
             withCredentials:true
@@ -18,6 +20,7 @@ const location = useLocation();
         if(response.data.status){
             dispatch(control.setprofile(""));
         toast.success(response.data.message);
+        navigate("/login");
 
         }
         else{
@@ -104,23 +107,25 @@ const location = useLocation();
   
   
             {/* User */}
+            {profile&&
             <button
               className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-emerald-100 hover:text-emerald-600 uppercase"
               title="Profile"
             >
               {profile.slice(0,1)}
               
-            </button>
+            </button>}
   
   
             {/* Logout */}
+            {profile?
             <button
               className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-500"
               title="Logout"
               onClick={Logout}
             >
               <LogOut size={18} />
-            </button>
+            </button>:<button onClick={()=>navigate("/login")} className="ml-2 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 hover:shadow-md active:scale-95">Login</button>}
   
           </div>
   
