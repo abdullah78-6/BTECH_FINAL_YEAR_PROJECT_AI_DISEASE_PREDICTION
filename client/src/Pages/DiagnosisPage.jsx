@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles, Search } from "lucide-react";
 import Navbar from "./Navbar";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,9 +11,13 @@ import { symptomsList } from "../assets/symptom";
 function DiagnosisPage({ url }) {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setloading] = useState(false);
-  const profile=useSelector(state=>state.main.profile);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+
   const dispatch = useDispatch();
   const prediction = useSelector((state) => state.main.prediction);
+  const profile=useSelector(state=>state.main.profile);
 
   const toggleSymptom = (symptom) => {
     setSelectedSymptoms((prev) =>
@@ -22,13 +26,14 @@ function DiagnosisPage({ url }) {
         : [...prev, symptom]
     );
   };
-const handlePrediction = async () => {
+
+  const handlePrediction = async () => {
     if (selectedSymptoms.length === 0) {
       toast.error("Please select at least one symptom.");
       return;
     }
     if(!profile){
-      toast.error("User Logn Required");
+      toast.error("User Login Required");
       return ;
     }
 
@@ -59,7 +64,18 @@ const handlePrediction = async () => {
       setloading(false);
     }
   };
-return (
+
+  //Clear All function
+  const clearAllSymptoms = () => {
+    setSelectedSymptoms([]);
+  };
+
+  //Filter symptoms according to search
+  const filteredSymptoms = symptomsList.filter((symptom) =>
+    symptom.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 font-semibold">
 
       <Navbar url={url} />
@@ -81,63 +97,107 @@ return (
           <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
             <div className="mb-5 flex items-center justify-between">
+
               <h3 className="text-lg font-bold text-slate-800">
                 Symptoms ({selectedSymptoms.length} selected)
               </h3>
+
+              {/* Clear All button */}
+              {selectedSymptoms.length > 0 && (
+                <button
+                  onClick={clearAllSymptoms}
+                  className="cursor-pointer rounded-lg px-3 py-2 text-xs font-bold text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                >
+                  Clear All
+                </button>
+              )}
+
+            </div>
+
+            {/* Symptom Search Bar */}
+            <div className="relative mb-5">
+
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search symptoms..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              />
+
             </div>
 
             <div className="grid max-h-[500px] grid-cols-1 gap-3 overflow-y-auto pr-2 sm:grid-cols-2 xl:grid-cols-3">
 
-              {symptomsList.map((symptom) => {
-                const isSelected = selectedSymptoms.includes(symptom);
+              {filteredSymptoms.length > 0 ? (
+                filteredSymptoms.map((symptom) => {
+                  const isSelected = selectedSymptoms.includes(symptom);
 
-                return (
-                  <button
-                    key={symptom}
-                    onClick={() => toggleSymptom(symptom)}
-                    className={`relative min-h-[70px] rounded-xl border p-3 text-left transition ${
-                      isSelected
-                        ? "border-emerald-500 bg-emerald-50 shadow-sm"
-                        : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
+                  return (
+                    <button
+                      key={symptom}
+                      onClick={() => toggleSymptom(symptom)}
+                      className={`relative min-h-[70px] rounded-xl border p-3 text-left transition ${
+                        isSelected
+                          ? "border-emerald-500 bg-emerald-50 shadow-sm"
+                          : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
 
-                      <div
-                        className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                          isSelected
-                            ? "border-emerald-500"
-                            : "border-slate-300"
-                        }`}
-                      >
-                        {isSelected && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        )}
+                        <div
+                          className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                            isSelected
+                              ? "border-emerald-500"
+                              : "border-slate-300"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                          )}
+                        </div>
+
+                        <span
+                          className={`text-sm font-bold ${
+                            isSelected
+                              ? "text-emerald-600"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          {isSelected ? "1" : "0"}
+                        </span>
                       </div>
 
                       <span
-                        className={`text-sm font-bold ${
+                        className={`mt-2 block text-xs font-medium ${
                           isSelected
-                            ? "text-emerald-600"
-                            : "text-slate-400"
+                            ? "text-emerald-800"
+                            : "text-slate-600"
                         }`}
                       >
-                        {isSelected ? "1" : "0"}
+                        {symptom}
                       </span>
-                    </div>
+                    </button>
+                  );
+                })
+              ) : (
+                // No search result message
+                <div className="col-span-full py-10 text-center">
+                  <Search
+                    size={30}
+                    className="mx-auto text-slate-300"
+                  />
 
-                    <span
-                      className={`mt-2 block text-xs font-medium ${
-                        isSelected
-                          ? "text-emerald-800"
-                          : "text-slate-600"
-                      }`}
-                    >
-                      {symptom}
-                    </span>
-                  </button>
-                );
-              })}
+                  <p className="mt-3 text-sm font-semibold text-slate-400">
+                    No symptoms found
+                  </p>
+                </div>
+              )}
 
             </div>
           </div>
@@ -239,12 +299,15 @@ return (
 
                 {loading ? (
                   <div className="flex h-[260px] flex-col items-center justify-center gap-4">
+
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 shadow-sm">
+
                       <ClipLoader
                         size={32}
                         color="#10b981"
                         speedMultiplier={0.8}
                       />
+
                     </div>
 
                     <div className="text-center">
@@ -256,6 +319,7 @@ return (
                         Please wait while AI generates your prediction...
                       </p>
                     </div>
+
                   </div>
                 ) : (
                   <textarea
@@ -288,4 +352,3 @@ return (
 }
 
 export default DiagnosisPage;
-
