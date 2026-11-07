@@ -8,11 +8,15 @@ const Diseaseslice=createSlice({
             email:"",
             password:""
         },
-        prediction:""
+        prediction:null,
+        inputtext:""
     },
     reducers:{
         setprofile(state,action){
             state.profile=action.payload;
+        },
+        setinputtext(state,action){
+            state.inputtext=action.payload;
         },
         setlogindata(state,action){
             const {name,value}=action.payload;
