@@ -1,0 +1,20 @@
+{
+    "features": [
+        "age",
+        "sex",
+        "chest pain type",
+        "resting blood pressure",
+        "serum cholestoral"
+    ],
+    "target": "heart disease",
+    "classes": [
+        1,
+        2
+    ],
+    "class_labels": {
+        "1": "No Heart Disease",
+        "2": "Heart Disease"
+    },
+    "best_model": "random_forest",
+    "total_records": 270
+}

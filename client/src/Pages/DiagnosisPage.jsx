@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { Sparkles, Search } from "lucide-react";
@@ -9,6 +8,7 @@ import Footer from "./Footer";
 import toast from "react-hot-toast";
 import { control } from "../Redux/slice";
 import { symptomsList } from "../assets/symptom";
+import Heartdisease from "./Heartdisease";
 
 function DiagnosisPage({ url }) {
 
@@ -18,9 +18,21 @@ function DiagnosisPage({ url }) {
 
   const dispatch = useDispatch();
 
-  const prediction = useSelector((state) => state.main.prediction);
-  const profile = useSelector((state) => state.main.profile);
-  const inputtext = useSelector((state) => state.main.inputtext);
+  const prediction = useSelector(
+    (state) => state.main.prediction
+  );
+
+  const profile = useSelector(
+    (state) => state.main.profile
+  );
+
+  const inputtext = useSelector(
+    (state) => state.main.inputtext
+  );
+
+  // =====================================
+  // SYMPTOM SELECTION
+  // =====================================
 
   const toggleSymptom = (symptom) => {
     setSelectedSymptoms((prev) =>
@@ -31,18 +43,26 @@ function DiagnosisPage({ url }) {
   };
 
   useEffect(() => {
-    if (!inputtext) {
-      return;
-    }
+
+    if (!inputtext) return;
 
     const timer = setTimeout(() => {
+
       setSelectedSymptoms((prev) =>
-        prev.includes(inputtext) ? prev : [...prev, inputtext]
+        prev.includes(inputtext)
+          ? prev
+          : [...prev, inputtext]
       );
+
     }, 1000);
 
     return () => clearTimeout(timer);
+
   }, [inputtext]);
+
+  // =====================================
+  // SYMPTOM PREDICTION
+  // =====================================
 
   const handlePrediction = async () => {
 
@@ -70,44 +90,336 @@ function DiagnosisPage({ url }) {
         }
       );
 
-      console.log("Backend Response:", res.data);
+      console.log("Symptom Backend Response:", res.data);
 
-      // Handle both possible response structures
       const result = res.data.result ?? res.data;
 
       if (res.data.status === false) {
-        toast.error(res.data.message || "Prediction failed");
+
+        toast.error(
+          res.data.message || "Prediction failed"
+        );
+
       } else if (result && result.prediction) {
 
         dispatch(control.setprediction(result));
 
+        toast.success("Prediction completed!");
+
       } else {
-        toast.error("Invalid prediction response from backend");
+
+        toast.error("Invalid prediction response");
+
         console.log("Invalid result:", result);
+
       }
 
     } catch (error) {
 
-      console.log("error from backend", error);
+      console.log("Symptom prediction error:", error);
+
       toast.error(
-        error.response?.data?.message || "Something went wrong"
+        error.response?.data?.message ||
+        "Something went wrong"
       );
 
     } finally {
+
       setloading(false);
+
     }
   };
 
-  // Clear All function
+
   const clearAllSymptoms = () => {
+
     setSelectedSymptoms([]);
+
     dispatch(control.setinputtext(""));
+
   };
 
-  // Filter symptoms
+  // =====================================
+  // FILTER SYMPTOMS
+  // =====================================
+
   const filteredSymptoms = symptomsList.filter((symptom) =>
     symptom.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // =====================================
+  // CHECK PREDICTION TYPE
+  // =====================================
+
+  const isHeartPrediction = Boolean(
+    prediction?.probabilities &&
+    (
+      prediction.probabilities.heart_disease !== undefined ||
+      prediction.probabilities.no_heart_disease !== undefined
+    )
+  );
+
+  // Heart model percentages are already 0-100.
+  // Do not multiply them by 100 again.
+
+  const heartProbabilities = [
+    {
+      label: "No Heart Disease",
+      value: Number(
+        prediction?.probabilities?.no_heart_disease ?? 0
+      )
+    },
+    {
+      label: "Heart Disease",
+      value: Number(
+        prediction?.probabilities?.heart_disease ?? 0
+      )
+    }
+  ];
+
+  // =====================================
+  // RESULT UI
+  // =====================================
+
+  const renderHeartResult = () => {
+
+    const confidence = prediction.predicted_class === 1
+      ? prediction.probabilities.no_heart_disease
+      : prediction.probabilities.heart_disease;
+
+    return (
+
+      <div className="space-y-5 p-5">
+
+        {/* Main Result */}
+
+        <div className="rounded-xl bg-emerald-50 p-5">
+
+          <p className="text-xs font-semibold text-emerald-600">
+            Predicted Result
+          </p>
+
+          <h2 className="mt-2 text-2xl font-bold text-emerald-800">
+            {prediction.prediction}
+          </h2>
+
+          <p className="mt-2 text-sm font-semibold text-slate-600">
+            Confidence: {Number(confidence).toFixed(2)}%
+          </p>
+
+        </div>
+
+        {/* Probability Results */}
+
+        <div>
+
+          <h3 className="mb-4 font-bold text-slate-800">
+            Heart Disease Prediction Percentages
+          </h3>
+
+          <div className="space-y-4">
+
+            {heartProbabilities.map((item) => {
+
+              const percentage = Number.isFinite(item.value)
+                ? Math.min(100, Math.max(0, item.value))
+                : 0;
+
+              return (
+
+                <div
+                  key={item.label}
+                  className="rounded-xl border border-slate-200 bg-white p-4"
+                >
+
+                  <div className="mb-2 flex items-center justify-between gap-3">
+
+                    <span className="text-sm font-semibold text-slate-700">
+                      {item.label}
+                    </span>
+
+                    <span className="text-sm font-bold text-emerald-600">
+                      {percentage.toFixed(2)}%
+                    </span>
+
+                  </div>
+
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+                      style={{
+                        width: `${percentage}%`
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        </div>
+
+        {/* Model Name */}
+
+        <div className="rounded-xl bg-blue-50 p-4">
+
+          <p className="text-xs font-semibold text-blue-600">
+            Machine Learning Model
+          </p>
+
+          <p className="mt-1 font-bold text-blue-800">
+            {prediction.model || "Heart Disease Model"}
+          </p>
+
+        </div>
+
+</div>
+
+    );
+
+  };
+
+  const renderSymptomResult = () => (
+
+    <div className="space-y-4 p-5">
+
+      {/* Main Prediction */}
+
+      <div className="rounded-xl bg-emerald-50 p-4">
+
+        <p className="text-xs font-semibold text-emerald-600">
+          Predicted Disease
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold text-emerald-800">
+          {prediction.prediction}
+        </h2>
+
+        {prediction.confidence !== undefined && (
+
+          <p className="mt-2 text-sm text-slate-600">
+            Confidence: {
+              (Number(prediction.confidence) * 100).toFixed(2)
+            }%
+          </p>
+
+        )}
+
+      </div>
+
+      {/* Top Predictions */}
+
+      <div>
+
+        <h3 className="mb-3 font-bold text-slate-800">
+          Top Predictions
+        </h3>
+
+        {prediction.top_predictions?.length > 0 ? (
+
+          prediction.top_predictions.map((item, index) => {
+
+            const percentage = Number(item.probability) * 100;
+
+            return (
+
+              <div
+                key={item.disease || index}
+                className="mb-3 rounded-lg border border-slate-200 bg-white p-3"
+              >
+
+                <div className="flex justify-between gap-3">
+
+                  <span className="text-sm font-semibold text-slate-700">
+                    {item.disease}
+                  </span>
+
+                  <span className="text-sm font-bold text-emerald-600">
+                    {percentage.toFixed(2)}%
+                  </span>
+
+                </div>
+
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{
+                      width: `${Math.min(100, Math.max(0, percentage))}%`
+                    }}
+                  />
+
+                </div>
+
+              </div>
+
+            );
+
+          })
+
+        ) : (
+
+          <p className="text-sm text-slate-400">
+            No additional predictions available.
+          </p>
+
+        )}
+
+      </div>
+
+      {/* Matched Symptoms */}
+
+      <div>
+
+        <h3 className="font-bold text-slate-800">
+          Matched Symptoms
+        </h3>
+
+        <p className="mt-2 text-sm text-slate-600">
+          {prediction.matched_symptoms?.join(", ") || "None"}
+        </p>
+
+      </div>
+
+      {/* Disclaimer / Note */}
+
+      {prediction.disclaimer && (
+
+        <div className="rounded-lg bg-yellow-50 p-3">
+
+          <p className="text-xs text-yellow-800">
+            {prediction.disclaimer}
+          </p>
+
+        </div>
+
+      )}
+
+      {prediction.note && (
+
+        <div className="rounded-lg bg-yellow-50 p-3">
+
+          <p className="text-sm text-yellow-800">
+            {prediction.note}
+          </p>
+
+        </div>
+
+      )}
+
+    </div>
+
+  );
+
+  // =====================================
+  // MAIN COMPONENT
+  // =====================================
 
   return (
 
@@ -117,7 +429,11 @@ function DiagnosisPage({ url }) {
 
       <main className="mx-auto max-w-6xl px-5 py-10">
 
-        <div className="mb-8 text-center">
+        {/* Heart Disease Form */}
+
+        <Heartdisease url={url} />
+
+        <div className="mb-8 mt-10 text-center">
 
           <h2 className="text-3xl font-bold text-slate-800 sm:text-4xl">
             Disease Prediction
@@ -137,11 +453,11 @@ function DiagnosisPage({ url }) {
 
             <div className="mb-5 flex items-center justify-between">
 
-              <h3 className="text-lg font-bold text-slate-800">
+              {/* <h3 className="text-lg font-bold text-slate-800">
                 Symptoms ({selectedSymptoms.length} selected)
-              </h3>
+              </h3> */}
 
-              {selectedSymptoms.length > 0 && (
+              {/* {selectedSymptoms.length > 0 && (
 
                 <button
                   onClick={clearAllSymptoms}
@@ -150,13 +466,13 @@ function DiagnosisPage({ url }) {
                   Clear All
                 </button>
 
-              )}
+              )} */}
 
             </div>
 
             {/* Search */}
 
-            <div className="relative mb-5">
+            {/* <div className="relative mb-5">
 
               <Search
                 size={18}
@@ -171,11 +487,13 @@ function DiagnosisPage({ url }) {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
 
-            </div>
+            </div> */}
+
+            {/* Symptoms List */}
 
             <div className="grid max-h-[500px] grid-cols-1 gap-3 overflow-y-auto pr-2 sm:grid-cols-2 xl:grid-cols-3">
 
-              {filteredSymptoms.length > 0 ? (
+              {/* {filteredSymptoms.length > 0 ? (
 
                 filteredSymptoms.map((symptom) => {
 
@@ -253,7 +571,7 @@ function DiagnosisPage({ url }) {
                 </div>
 
               )}
-
+ */}
             </div>
 
           </div>
@@ -275,6 +593,8 @@ function DiagnosisPage({ url }) {
 
             </div>
 
+            {/* Total Symptoms */}
+
             <div className="mt-5 rounded-xl bg-blue-50 p-5">
 
               <p className="text-xs font-semibold text-blue-600">
@@ -282,7 +602,7 @@ function DiagnosisPage({ url }) {
               </p>
 
               <p className="mt-2 text-3xl font-bold text-blue-700">
-                {selectedSymptoms.length}
+                {/* {selectedSymptoms.length} */}
               </p>
 
             </div>
@@ -291,19 +611,15 @@ function DiagnosisPage({ url }) {
 
             <div className="mt-4 min-h-[120px] rounded-xl bg-slate-50 p-5">
 
-              <div className="flex justify-center items-center">
-
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none text-gray-700 bg-white shadow-sm placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200"
-                  placeholder="Enter-Symptom"
-                  value={inputtext}
-                  onChange={(e) =>
-                    dispatch(control.setinputtext(e.target.value))
-                  }
-                />
-
-              </div>
+              <input
+                type="text"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-700 outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                placeholder="Enter-Symptom"
+                value={inputtext}
+                onChange={(e) =>
+                  dispatch(control.setinputtext(e.target.value))
+                }
+              />
 
               <p className="mt-3 text-sm font-semibold text-slate-700">
                 Active Symptoms
@@ -321,11 +637,12 @@ function DiagnosisPage({ url }) {
 
                   {selectedSymptoms.map((symptom) => (
 
-                    <div key={symptom}>
-                      <p className="text-sm text-slate-600">
-                        • {symptom}
-                      </p>
-                    </div>
+                    <p
+                      key={symptom}
+                      className="text-sm text-slate-600"
+                    >
+                      • {symptom}
+                    </p>
 
                   ))}
 
@@ -402,153 +719,22 @@ function DiagnosisPage({ url }) {
 
                   <div className="flex h-[260px] flex-col items-center justify-center gap-4">
 
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 shadow-sm">
+                    <ClipLoader
+                      size={32}
+                      color="#10b981"
+                    />
 
-                      <ClipLoader
-                        size={32}
-                        color="#10b981"
-                        speedMultiplier={0.8}
-                      />
-
-                    </div>
-
-                    <div className="text-center">
-
-                      <p className="text-sm font-bold text-emerald-700">
-                        Analyzing Symptoms
-                      </p>
-
-                      <p className="mt-1 text-xs font-medium text-slate-400">
-                        Please wait while AI generates your prediction...
-                      </p>
-
-                    </div>
+                    <p className="text-sm font-bold text-emerald-700">
+                      Analyzing...
+                    </p>
 
                   </div>
 
                 ) : prediction ? (
 
-                  <div className="space-y-4 p-5">
-
-                    {/* Main Prediction */}
-
-                    <div className="rounded-xl bg-emerald-50 p-4">
-
-                      <p className="text-xs font-semibold text-emerald-600">
-                        Predicted Disease
-                      </p>
-
-                      <h2 className="mt-2 text-2xl font-bold text-emerald-800">
-                        {prediction.prediction}
-                      </h2>
-
-                      <p className="mt-2 text-sm text-slate-600">
-                        Confidence: {(Number(prediction.confidence) * 100).toFixed(2)}%
-                      </p>
-
-                    </div>
-
-                    {/* Top Predictions */}
-
-                    <div>
-
-                      <h3 className="mb-3 font-bold text-slate-800">
-                        Top Predictions
-                      </h3>
-
-                      {prediction.top_predictions?.map((i) => (
-
-                        <div
-                          key={i.disease}
-                          className="mb-2 rounded-lg border border-slate-200 bg-white p-3"
-                        >
-
-                          <div className="flex justify-between">
-
-                            <span className="text-sm font-semibold text-slate-700">
-                              {i.disease}
-                            </span>
-
-                            <span className="text-sm font-bold text-emerald-600">
-                              {(Number(i.probability) * 100).toFixed(2)}%
-                            </span>
-
-                          </div>
-
-                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-
-                            <div
-                              className="h-full rounded-full bg-emerald-500"
-                              style={{
-                                width: `${Math.min(100, Math.max(0, Number(i.probability) * 100))}%`
-                              }}
-                            />
-
-                          </div>
-
-                        </div>
-
-                      ))}
-
-                    </div>
-
-                    {/* Matched Symptoms */}
-
-                    <div>
-
-                      <h3 className="font-bold text-slate-800">
-                        Matched Symptoms
-                      </h3>
-
-                      <p className="mt-2 text-sm text-slate-600">
-                        {prediction.matched_symptoms?.join(", ") || "None"}
-                      </p>
-
-                    </div>
-
-                    {/* Unknown Symptoms */}
-
-                    <div>
-
-                      {/* <h3 className="font-bold text-slate-800">
-                        Unknown Symptoms
-                      </h3> */}
-
-                      {/* <p className="mt-2 text-sm text-slate-600">
-                        {prediction.unknown_symptoms?.join(", ") || "None"}
-                      </p> */}
-
-                    </div>
-
-                    {/* Corrected Symptoms */}
-
-                    <div>
-
-                      {/* <h3 className="font-bold text-slate-800">
-                        Corrected Symptoms
-                      </h3> */}
-
-                      {/* <p className="mt-2 text-sm text-slate-600">
-                        {JSON.stringify(prediction.corrected_symptoms || {})}
-                      </p> */}
-
-                    </div>
-
-                    {/* Note */}
-
-                    {prediction.note && (
-
-                      <div className="rounded-lg bg-yellow-50 p-3">
-
-                        {/* <p className="text-sm font-semibold text-yellow-800">
-                          {prediction.note}
-                        </p> */}
-
-                      </div>
-
-                    )}
-
-                  </div>
+                  isHeartPrediction
+                    ? renderHeartResult()
+                    : renderSymptomResult()
 
                 ) : (
 
@@ -567,7 +753,8 @@ function DiagnosisPage({ url }) {
             </div>
 
             <p className="mt-4 text-center text-xs leading-5 text-slate-400">
-              This prediction is generated by an AI model and should not replace professional medical advice.
+              This prediction is generated by a machine-learning model
+              and should not replace professional medical advice.
             </p>
 
           </div>
@@ -579,7 +766,9 @@ function DiagnosisPage({ url }) {
       <Footer />
 
     </div>
+
   );
+
 }
 
 export default DiagnosisPage;

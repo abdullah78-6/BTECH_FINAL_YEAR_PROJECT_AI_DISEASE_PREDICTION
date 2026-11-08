@@ -23,4 +23,18 @@ const Predictdisease=async(req,res)=>{
     }
 
 }
-export {Predictdisease}
+const Heartdisease=async(req,res)=>{
+    try {
+        const heartData=req.body;
+        console.log(heartData);
+    const response=await axios.post("http://127.0.0.1:8000/heart-predict",heartData);
+    const airesult=response.data;
+    console.log(airesult)
+    return res.json({status:true,result:airesult});
+    
+    } catch (error) {
+        console.log("heart disease prediction error",error);
+        return res.json({status:false})
+    }
+}
+export {Predictdisease,Heartdisease}
