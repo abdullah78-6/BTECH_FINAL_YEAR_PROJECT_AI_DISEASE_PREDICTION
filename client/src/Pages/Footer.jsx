@@ -31,8 +31,8 @@ function Footer() {
             </div>
 
             <p className="max-w-sm text-sm leading-6 text-slate-400">
-              Predict possible health conditions using machine learning
-              and understand why AI made each prediction with Explainable AI.
+              Predict the heart disease using machine learning
+              and understand why AI made each prediction. 
             </p>
 
             <div className="mt-5 flex items-center gap-2 text-sm text-slate-400">
@@ -68,16 +68,6 @@ function Footer() {
                   Disease Prediction
                 </a>
               </li>
-
-              <li>
-                <a
-                  href="#explainable-ai"
-                  className="transition-colors hover:text-emerald-400"
-                >
-                  Explainable AI
-                </a>
-              </li>
-
               <li>
                 <a
                   href="#about"
@@ -103,14 +93,10 @@ function Footer() {
 
               <li className="flex items-center gap-2">
                 <Activity size={16} className="text-emerald-400" />
-                Health Prediction
+               Heart  Disease Prediction
               </li>
 
-              <li className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-emerald-400" />
-                Explainable Predictions
-              </li>
-
+              
               <li className="flex items-center gap-2">
                 <ShieldCheck size={16} className="text-emerald-400" />
                 Secure & Private
@@ -118,7 +104,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">
               Contact
@@ -152,7 +138,7 @@ function Footer() {
           <p className="flex items-center justify-center gap-1 sm:justify-end">
             Built with
             <span className="font-medium text-emerald-400">
-              Machine Learning & Explainable AI
+              Machine Learning 
             </span>
           </p>
         </div>

@@ -203,11 +203,11 @@ const Onlogin=async(event)=>{
 
             <h1 className="text-4xl font-bold leading-tight text-white xl:text-5xl">
 
-              Smarter Health
+              Smarter Heart 
               <br />
 
               <span className="text-green-100">
-                Predictions with AI
+              Disease  Predictions with AI
               </span>
 
             </h1>
@@ -217,9 +217,8 @@ const Onlogin=async(event)=>{
 
             <p className="mt-6 max-w-md text-base leading-7 text-white/90 xl:text-lg">
 
-              Predict possible health conditions using machine
-              learning and understand why the AI made each
-              prediction with Explainable AI.
+              Predict possible heart disease using machine
+              learning and understand the response. 
 
             </p>
 
@@ -245,7 +244,7 @@ const Onlogin=async(event)=>{
                   </h3>
 
                   <p className="text-sm text-green-50">
-                    Machine learning models analyze patient data
+                    Machine learning models analyze patient information
                   </p>
 
                 </div>
@@ -269,8 +268,8 @@ const Onlogin=async(event)=>{
                     Explainable Predictions
                   </h3>
 
-                  <p className="text-sm text-green-50">
-                    Understand the important factors behind predictions
+                  <p className="text-sm text-green-50 ">
+                    Easily get a approx idea of heart disease
                   </p>
 
                 </div>
@@ -320,7 +319,7 @@ const Onlogin=async(event)=>{
                   </h3>
 
                   <p className="text-sm text-green-50">
-                    AI explanations help users understand results
+                    AI response help users to understand results
                   </p>
 
                 </div>

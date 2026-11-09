@@ -28,16 +28,15 @@ function HomePage({url}) {
             </div>
 
             <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-emerald-100">
-              Explainable Artificial Intelligence
+               Artificial Intelligence Based Response
             </p>
 
             <h2 className="text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Smarter Health Predictions with AI
+              Smarter Heart Disease Prediction with AI
             </h2>
 
             <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-emerald-50 sm:text-lg">
-              Predict possible health conditions using machine learning
-              and understand why the AI made each prediction.
+              Get the idea about the heart disease based on the patient info
             </p>
 
 
@@ -76,7 +75,7 @@ function HomePage({url}) {
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500">
             Our system combines machine learning with Explainable AI
-            to make medical predictions easier to understand.
+            to get a better medical predictions. 
           </p>
 
         </div>
@@ -97,7 +96,7 @@ function HomePage({url}) {
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
               Machine learning models analyse patient medical data
-              to predict possible health conditions.
+              to predict possible heart health.
             </p>
 
           </div>
@@ -111,12 +110,11 @@ function HomePage({url}) {
             </div>
 
             <h4 className="text-lg font-bold text-slate-800">
-              Explainable Predictions
+              AI Predictions
             </h4>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Understand which medical factors influenced the
-              prediction made by the AI model.
+              Easy understanding of a AI response based on the patient information
             </p>
 
           </div>
@@ -134,8 +132,8 @@ function HomePage({url}) {
             </h4>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Patient information will be handled securely when
-              the backend is connected.
+              Patient information will be handled securely 
+              .
             </p>
 
           </div>
